@@ -1,10 +1,13 @@
 import requests
 import os 
+
+# 透過api取得代理伺服器ip和port
+
 api_tocken = os.getenv("API_TOCKEN")
 response = requests.get("https://proxy.webshare.io/api/proxy/list/", headers={"Authorization":api_tocken})
 m = [[i["proxy_address"] , str(i["ports"]["http"])] for i in response.json()["results"]]
 
-
+# 驗證是否有效
 validips = []
 for ip in m:
     try:
@@ -15,7 +18,7 @@ for ip in m:
         print('FAIL', f"{ip[0]}:{ip[1]}")
 
 
-
+# 將有效的proxy 寫入到squid 配置文件中
 PEER_CONF = "cache_peer %s parent %s 0 no-query weighted-round-robin weight=1 connect-fail-limit=2 allow-miss max-conn=5\n"
 def update_conf():
     with open("/etc/squid/squid.conf.original", "r") as F:
@@ -26,17 +29,11 @@ def update_conf():
         squid_conf.append(PEER_CONF % (proxy[0], proxy[1]))
     with open("/etc/squid/squid.conf", "w") as F:
         F.writelines(squid_conf)
-def get_proxy():
-    update_conf()
-    # 3. 重新加载配置文件
-#    os.system("squid -k reconfigure")
 
-def main():
-    get_proxy()
+
 
 if __name__ == "__main__":
-
-   main()
+   update_conf()
 
 
 

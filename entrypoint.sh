@@ -1,7 +1,8 @@
 #! /bin/sh
+
 python3 change_squid_conf.py
 
-squid
+squid 
 
 /bin/sh
 
